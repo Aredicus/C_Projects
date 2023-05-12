@@ -4,140 +4,188 @@
 node *initTree(int value) {
     node *res = malloc(sizeof(node)); // Выделение памяти
     res->value = value; // Начальная инициализация
-    res->left = NULL;
-    res->right = NULL;
+    res->children = NULL;
+    res->f_child = NULL;
+    res->brothers = NULL;
+    res->set = initSet();
+    addSet(res->set, value);
     return res; // Возвращение указателя на созданный узел
 }
 
-void showTree(node tmp, int i) {
-    if (i == 0)
-        printf("\n\n"); // Чтоб отделить от общего вывода
-    if (tmp.left != NULL) {
-        showTree(*tmp.left, i + 1); // Вызов левых вершин (Они верхние)
-    }
-    for (int j = 0; j < i; ++j) printf("\t"); // Для понимания уровня узла
-    printf("%d\n", tmp.value);
-    if (tmp.right != NULL) {
-        showTree(*tmp.right, i + 1); // Вызов нижних вершин (Они нижние)
+Set *initSet() {
+    Set *set = (Set *) malloc(sizeof(Set));
+    set->size = 0;
+    set->capacity = 10;
+    set->values = calloc(set->capacity, sizeof(int));
+    return set;
+}
+
+void destroySet(Set **set) {
+    free((*set)->values);
+    free(*set);
+    (*set)->size = 0;
+    (*set)->capacity = 0;
+    (*set) = NULL;
+}
+
+bool addSet(Set *set, int val) {
+    if (isSet(set, val)) {
+        set->size++;
+        if (set->size == set->capacity) {
+            set->capacity *= 2;
+            int *tmp = realloc(set->values, set->capacity);
+            set->values = tmp;
+        }
+        set->values[set->size - 1] = val;
+        return true;
+    } else {
+        return false;
     }
 }
 
-void addNode(node *tmp, int value) { // Исключает возможность двух одинаковых вершин
-    if (value > tmp->value) { // Ставим в левых потомков, если больше текущего узла
-        if (tmp->left != NULL) { // Спускаемся левее
-            addNode(tmp->left, value);
-        } else { // Ставим на левого потомка
-            tmp->left = initTree(value);
+bool isSet(Set *set, int val) {
+    for (int i = 0; i < set->size; i++) {
+        if (set->values[i] == val) return false;
+    }
+    return true;
+}
+
+void delSet(Set *set, int val) {
+    if (!isSet(set, val)) {
+        int k = 0;
+        for (int i = 0; i < set->size; i++) {
+            if (set->values[i] == val) k++;
+            set->values[i] = set->values[i + k];
         }
-    } else if (value < tmp->value) { // Ставим в правого потомка, если меньше текущего узла
-        if (tmp->right != NULL) { // Спускаемся правее
-            addNode(tmp->right, value);
-        } else { // Ставим на правого потомка
-            tmp->right = initTree(value);
-        }
+        set->size--;
     }
 }
 
-void delNode(node *tmp, int value) {
-    if (tmp != NULL) { // Если узел вообще есть
-        if (tmp->right != NULL) { // Если есть правые потомки
-            if (tmp->right->value == value) { // Если правый потомок - нужный узел
-                node *temp = tmp->right; // Делаем указатель на нужный узел
-                tmp->right = tmp->right->left; // Ставим новым правым узлом левого потомка предыдущего узла
-                if (tmp->right != NULL) { // Если этот потомок вообще был
-                    node *right = tmp->right->right; // Спускаемся в самый правый низ новой вершины
-                    if (right != NULL) { // Логично, ведь левее предыдущей вершины все точно больше любой вершины справа
-                        while (right->right != NULL) right = right->right;
-                        right->right = temp->right; // Ставим самым правим потомком правое поддерево удаляемой вершины
-                    } else {
-                        right = temp->right;
+void addNode(node *tree, int parent, int val) {
+    if (!isSet(tree->set, parent) && isSet(tree->set, val)) {
+        addSet(tree->set, val);
+        if (tree->value == parent) {
+            if (tree->f_child != NULL) {
+                if (tree->children == NULL) {
+                    tree->children = initTree(val);
+                } else {
+                    node *tmp = tree->children;
+                    while (tmp->brothers != NULL) {
+                        tmp = tmp->brothers;
                     }
-                } else { // Если не был
-                    tmp->right = temp->left;
+                    tmp->brothers = initTree(val);
                 }
-                free(temp); // Удаляем искомый узел
-                return; // чтоб не идти дальше
+            } else {
+                tree->f_child = initTree(val);
+            }
+        } else if (tree->f_child != NULL) {
+            addNode(tree->f_child, parent, val);
+            if (tree->children != NULL) {
+                node *tmp = tree->children;
+                while (tmp != NULL) {
+                    addNode(tmp, parent, val);
+                    tmp = tmp->brothers;
+                }
             }
         }
-        if (tmp->left != NULL) { // Если есть левый потомок
-            if (tmp->left->value == value) { // алгоритм такой же как и выше
-                node *temp = tmp->left;
-                tmp->left = tmp->left->left;
-                if (tmp->left != NULL) {
-                    node *right = tmp->left->right;
-                    if (right != NULL) {
-                        while (right->right != NULL) right = right->right;
-                        right->right = temp->right;
+    }
+}
+
+void delNode(node *tree, int val) {
+    if (!isSet(tree->set, val)) {
+        delSet(tree->set, val);
+        if (tree->f_child != NULL) {
+            if (tree->f_child->value == val) {
+                node *tmp = tree->f_child;
+                tree->f_child = tmp->f_child;
+                node *bro = tree->children;
+                if (bro != NULL) {
+                    while (bro->brothers != NULL) {
+                        bro = bro->brothers;
+                    }
+                    bro->brothers = tmp->children;
+                } else {
+                    tree->children = tmp->children;
+                }
+                destroySet(&(tmp->set));
+                free(tmp);
+                return;
+            }
+        }
+        if (tree->value == val) {
+
+        }
+        if (tree->children != NULL) {
+            if (tree->children->value == val) {
+                node *tmp = tree->children;
+                if (tmp->brothers != NULL) {
+                    tree->children = tmp->brothers;
+                    node *child = tree->children->children;
+                    if (child != NULL) {
+                        while (child->brothers != NULL) {
+                            child = child->brothers;
+                        }
+                    }
+                    if (tmp->f_child != NULL) {
+                        child = tmp->f_child;
+                        child->brothers = tmp->children;
                     } else {
-                        right = temp->right;
+                        child = tmp->children;
                     }
                 } else {
-                    tmp->left = temp->right;
+                    tree->children = tmp->f_child;
+                    tree->children->brothers = tmp->children;
                 }
-                free(temp);
+                destroySet(&(tmp->set));
+                free(tmp);
                 return;
             }
-        }
-        if (tmp->value < value && tmp->left != NULL) { // Если есть левый потомок и искомое значение в той стороне
-            delNode(tmp->left, value);
-        } else if (tmp->value > value && tmp->right != NULL) { // Если есть правый потомок и искомое значение в той стороне
-            delNode(tmp->right, value);
-        } else if (tmp->value == value) { // Если искомое значение - вершина дерева
-            if (tmp->left != NULL) // Если есть левый потомок
-                tmp->value = tmp->left->value; // Ставим на верх вершины левое значение (чтоб сохранить структуру
-            else if (tmp->right != NULL) // Ну или хотя бы правый
-                tmp->value = tmp->right->value; // Ставим на верх вершины правое
-            else { // Тогда срубаем всё дерево
-                delTree(&tmp);
-                return;
+        } else {
+            delNode(tree->f_child, val);
+            node *tmp = tree->children;
+            while (tmp != NULL) {
+                delNode(tmp, val);
+                tmp = tmp->brothers;
             }
-            delNode(tmp, tmp->value); // Удаляем уже выставленную на верх вершину
-            // Это работает так, что так как мы сначала проверяем потомков, то первыми мы видим левого или правого потомка
-            // Удаляем его, а так как на верхушке стоит его значение, то по факту удалили верхушку
         }
-
-    } else { // ОшибОчка
-        printf("AHTUNG! Empty tree\n");
-    }
-
-}
-
-void delTree(node **Node) {
-    node *left = (*Node)->left; // Чтоб идти по левым потомкам
-    node *right = (*Node)->right; // ЧТоб идти по правым потомкам
-    free(*Node); // Чистим вершину
-    *Node = NULL; // Чтоб точно знать, что дерева больше нет
-    if (left != NULL) { // Если были левые потомки
-        delTree(&left); // Чистим их
-    }
-    if (right != NULL) { // Если были правые потомки
-        delTree(&right); // Чистим их
     }
 }
 
-pair search(node *Node, int i) {
-    if (Node->right == NULL && Node->left == NULL) { // Если мы в самой глубокой вершины ветви
-        pair res;
-        res.i = i;
-        res.value = Node->value;
-        return res; // Возвращаем пару: текущая глубина и значение узла
+void showTree(node tmp, int i) {
+    if (i == 0) {
+        printf("\n\n\n");
     }
-    pair right;
-    right.i = 0;
-    pair left;
-    left.i = 0;
-    if (Node->right != NULL) { // Если есть правые поддеревья
-        right = search(Node->right, i + 1); // Идем искать ниже, увеличивая счетчик глубины
+    if (tmp.f_child != NULL) {
+        showTree(*tmp.f_child, i + 1);
     }
-    if (Node->left != NULL) { // Если есть левые поддеревья
-        left = search(Node->left, i + 1); // Идем искать ниже, увеличивая счетчик глубины
+    for (int j = 0; j < i; j++) {
+        printf("\t");
     }
-    return right.i > left.i ? right : left; // Возвращаем пару с самым глубоким значением глубины
+    printf("%d\n", tmp.value);
+    if (tmp.children != NULL) {
+        node *t = tmp.children;
+        while (t != NULL) {
+            showTree(*t, i + 1);
+            t = t->brothers;
+        }
+    }
 }
 
-void deep(node *Node) { // Поиск самого глубокого листа (на максимальной удаленности от вершины)
-    pair res = search(Node, 1); // Запуск поиска
-    printf("deep:%d value:%d\n", res.i, res.value); // Выводим глубину и само значение
+void delTree(node **tree) {
+    if ((*tree) != NULL) {
+        destroySet(&((*tree)->set));
+        if ((*tree)->children != NULL) {
+            delTree(&(*tree)->children);
+        }
+        if ((*tree)->f_child != NULL) {
+            delTree(&(*tree)->f_child);
+        }
+        if ((*tree)->brothers != NULL) {
+            delTree(&(*tree)->brothers);
+        }
+        free(*tree);
+        *tree = NULL;
+    }
 }
 
 void rules() { // Правила

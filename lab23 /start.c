@@ -8,21 +8,21 @@ int main() {
     while (1) {
         rules();
         if (scanf("%d", &stage) == 1) {
-            int value;
+            int value1, value2;
             switch (stage) {
                 case 1:
                     printf("Введите вершину дерева: ");
-                    if (scanf("%d", &value) == 1) {
-                        Node = initTree(value);
+                    if (scanf("%d", &value1) == 1) {
+                        Node = initTree(value1);
                     } else {
                         error();
                     }
                     break;
                 case 2:
                     if (Node != NULL) {
-                        printf("Введите добавляемую вершину: ");
-                        if (scanf("%d", &value) == 1) {
-                            addNode(Node, value);
+                        printf("Введите куда добавлять и добавляемую вершину: ");
+                        if (scanf("%d %d", &value1, &value2) == 2) {
+                            addNode(Node, value1, value2);
                         } else {
                             error();
                         }
@@ -34,8 +34,8 @@ int main() {
                 case 3:
                     if (Node != NULL) {
                         printf("Введите удаляемую вершину: ");
-                        if (scanf("%d", &value) == 1) {
-                            delNode(Node, value);
+                        if (scanf("%d", &value1) == 1) {
+                            delNode(Node, value1);
                         } else {
                             error();
                         }
@@ -52,27 +52,14 @@ int main() {
                         error();
                     }
                     break;
-                case 5:
+                case 6:
                     if (Node != NULL) {
-                        deep(Node);
+                        delTree(&Node);
                     } else {
                         printf("Нет дерева\n");
                         error();
                     }
                     break;
-                case 6:
-                    if (Node != NULL) {
-                        delTree(&Node);
-                    } else {
-                        printf("Его и так нет\n");
-                    }
-                    break;
-                case 7:
-                    if (Node != NULL) {
-                        delTree(&Node);
-                    }
-                    printf("Пока!");
-                    exit(0);
                 default:
                     error();
                     break;
