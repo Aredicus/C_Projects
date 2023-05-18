@@ -3,9 +3,12 @@
 
 node *initTree(int value) {
     node *res = malloc(sizeof(node)); // Выделение памяти
+    if (res == NULL) {
+        error();
+        exit(0);
+    }
     res->value = value; // Начальная инициализация
     res->children = NULL;
-    res->f_child = NULL;
     res->brothers = NULL;
     res->set = initSet();
     addSet(res->set, value);
@@ -14,6 +17,10 @@ node *initTree(int value) {
 
 Set *initSet() {
     Set *set = (Set *) malloc(sizeof(Set));
+    if (set == NULL) {
+        error();
+        exit(0);
+    }
     set->size = 0;
     set->capacity = 10;
     set->values = calloc(set->capacity, sizeof(int));
@@ -23,8 +30,6 @@ Set *initSet() {
 void destroySet(Set **set) {
     free((*set)->values);
     free(*set);
-    (*set)->size = 0;
-    (*set)->capacity = 0;
     (*set) = NULL;
 }
 
@@ -53,7 +58,7 @@ bool isSet(Set *set, int val) {
 void delSet(Set *set, int val) {
     if (!isSet(set, val)) {
         int k = 0;
-        for (int i = 0; i < set->size; i++) {
+        for (int i = 0; i < set->size - 1; i++) {
             if (set->values[i] == val) k++;
             set->values[i] = set->values[i + k];
         }
@@ -61,102 +66,121 @@ void delSet(Set *set, int val) {
     }
 }
 
-void addNode(node *tree, int parent, int val) {
-    if (!isSet(tree->set, parent) && isSet(tree->set, val)) {
-        addSet(tree->set, val);
-        if (tree->value == parent) {
-            if (tree->f_child != NULL) {
-                if (tree->children == NULL) {
-                    tree->children = initTree(val);
-                } else {
+void addNode(node *tree, int where, int what) {
+    if (isSet(tree->set, what)) {
+        if (!isSet(tree->set, where)) {
+            addSet(tree->set, what);
+            if (tree->value == where) {
+                if (tree->children != NULL) {
                     node *tmp = tree->children;
                     while (tmp->brothers != NULL) {
                         tmp = tmp->brothers;
                     }
-                    tmp->brothers = initTree(val);
+                    tmp->brothers = initTree(what);
+                    addSet(tmp->set, what);
+                } else {
+                    tree->children = initTree(what);
                 }
             } else {
-                tree->f_child = initTree(val);
-            }
-        } else if (tree->f_child != NULL) {
-            addNode(tree->f_child, parent, val);
-            if (tree->children != NULL) {
-                node *tmp = tree->children;
-                while (tmp != NULL) {
-                    addNode(tmp, parent, val);
-                    tmp = tmp->brothers;
+                if (tree->children != NULL) {
+                    addNode(tree->children, where, what);
+                }
+                if (tree->brothers != NULL) {
+                    addNode(tree->brothers, where, what);
                 }
             }
+        } else if (tree->brothers != NULL) {
+            addNode(tree->brothers, where, what);
         }
     }
 }
 
-void delNode(node *tree, int val) {
-    if (!isSet(tree->set, val)) {
-        delSet(tree->set, val);
-        if (tree->f_child != NULL) {
-            if (tree->f_child->value == val) {
-                node *tmp = tree->f_child;
-                tree->f_child = tmp->f_child;
-                node *bro = tree->children;
-                if (bro != NULL) {
-                    while (bro->brothers != NULL) {
-                        bro = bro->brothers;
+void sumSet(Set *dst, Set src) {
+    for (int i = 0; i < src.size; i++) {
+        if (!isSet(dst, src.values[i])) {
+            addSet(dst, src.values[i]);
+        }
+    }
+}
+
+void delNode(node *tree, int what) {
+    if (!isSet(tree->set, what)) {
+        delSet(tree->set, what);
+        if (tree->children != NULL) {
+            if (tree->children->value == what) {
+                node *del = tree->children;
+                if (del->brothers != NULL) {
+                    tree->children = del->brothers;
+                    if (del->children != NULL) {
+                        if (tree->children->brothers != NULL) {
+                            node *tmp = tree->children->brothers;
+                            while (tmp->brothers != NULL) {
+                                tmp = tmp->brothers;
+                            }
+                            tmp->brothers = del->children;
+                        } else {
+                            tree->children->brothers = del->children;
+                        }
+                        delSet(del->set, del->value);
+                        sumSet(tree->children->set, *(del->set));
                     }
-                    bro->brothers = tmp->children;
+                } else if (del->children != NULL) {
+                    tree->children = del->children;
                 } else {
-                    tree->children = tmp->children;
+                    tree->children = NULL;
                 }
-                destroySet(&(tmp->set));
-                free(tmp);
+                destroySet(&(del->set));
+                free(del);
                 return;
             }
         }
-        if (tree->value == val) {
-
+        if (tree->brothers != NULL) {
+            if (tree->brothers->value == what) {
+                node *del = tree->brothers;
+                if (del->brothers != NULL) {
+                    tree->brothers = del->brothers;
+                    if (del->children != NULL) {
+                        if (tree->brothers->children != NULL) {
+                            node *tmp = tree->brothers->children;
+                            while (tmp->brothers != NULL) {
+                                tmp = tmp->brothers;
+                            }
+                            tmp->brothers = del->children;
+                        } else {
+                            tree->brothers->children = del->children;
+                        }
+                        delSet(del->set, del->value);
+                        sumSet(tree->brothers->set, *(del->set));
+                    }
+                } else if (del->children != NULL) {
+                    if (tree->children != NULL) {
+                        node *tmp = tree->children;
+                        while (tmp->brothers != NULL) {
+                            tmp = tmp->brothers;
+                        }
+                        tmp->brothers = del->children;
+                    } else {
+                        tree->children = del->children;
+                    }
+                } else {
+                    tree->brothers = NULL;
+                }
+                destroySet(&del->set);
+                free(del);
+                return;
+            }
         }
         if (tree->children != NULL) {
-            if (tree->children->value == val) {
-                node *tmp = tree->children;
-                if (tmp->brothers != NULL) {
-                    tree->children = tmp->brothers;
-                    node *child = tree->children->children;
-                    if (child != NULL) {
-                        while (child->brothers != NULL) {
-                            child = child->brothers;
-                        }
-                    }
-                    if (tmp->f_child != NULL) {
-                        child = tmp->f_child;
-                        child->brothers = tmp->children;
-                    } else {
-                        child = tmp->children;
-                    }
-                } else {
-                    tree->children = tmp->f_child;
-                    tree->children->brothers = tmp->children;
-                }
-                destroySet(&(tmp->set));
-                free(tmp);
-                return;
-            }
-        } else {
-            delNode(tree->f_child, val);
-            node *tmp = tree->children;
-            while (tmp != NULL) {
-                delNode(tmp, val);
-                tmp = tmp->brothers;
-            }
+            delNode(tree->children, what);
         }
+    } else if (tree->brothers != NULL) {
+        delNode(tree->brothers, what);
     }
 }
 
 void showTree(node tmp, int i) {
     if (i == 0) {
         printf("\n\n\n");
-    }
-    if (tmp.f_child != NULL) {
-        showTree(*tmp.f_child, i + 1);
     }
     for (int j = 0; j < i; j++) {
         printf("\t");
@@ -177,14 +201,12 @@ void delTree(node **tree) {
         if ((*tree)->children != NULL) {
             delTree(&(*tree)->children);
         }
-        if ((*tree)->f_child != NULL) {
-            delTree(&(*tree)->f_child);
-        }
         if ((*tree)->brothers != NULL) {
             delTree(&(*tree)->brothers);
         }
         free(*tree);
-        *tree = NULL;
+        (*tree) = NULL;
+        tree = NULL;
     }
 }
 

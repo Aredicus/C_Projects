@@ -35,7 +35,16 @@ int main() {
                     if (Node != NULL) {
                         printf("Введите удаляемую вершину: ");
                         if (scanf("%d", &value1) == 1) {
-                            delNode(Node, value1);
+                            if (Node->value == value1) {
+                                printf("Вы точно хотите удалить дерево? (y/n)");
+                                fflush(stdin);
+                                char c = getchar();
+                                if (c == 'y') {
+                                    delTree(&Node);
+                                }
+                            } else {
+                                delNode(Node, value1);
+                            }
                         } else {
                             error();
                         }
@@ -60,6 +69,8 @@ int main() {
                         error();
                     }
                     break;
+                case 7:
+                    exit(0);
                 default:
                     error();
                     break;

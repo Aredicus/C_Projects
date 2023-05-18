@@ -14,7 +14,6 @@ struct Set {
 
 struct node { // Структура узла
     int value;
-    struct node *f_child;
     struct node *children;
     struct node *brothers;
     Set *set;
@@ -27,7 +26,7 @@ struct pair { // Вспомогательная структура пары
 
 node *initTree(int); // Создание нового узла с заданным значением и возвращение на него указателя
 
-void addNode(node *, int, int); // Добавление нового узла (по правилам бинарного дерева)
+void addNode(node *, int, int); // Добавление нового узла (дерево, куда, что)
 
 void delNode(node *, int); // Удаление узла с заданным значением (дерево все равно остается бинарным)
 
@@ -46,6 +45,8 @@ void error(); // Вывод ошибки
 Set *initSet();
 
 bool addSet(Set *, int);
+
+void sumSet(Set *, Set);
 
 void delSet(Set *, int);
 
