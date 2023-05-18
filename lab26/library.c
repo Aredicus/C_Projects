@@ -13,7 +13,7 @@ deque *init_deque(int val) {
     return res;
 }
 
-void push_left(deque **Deque, int val) {
+void push_back(deque **Deque, int val) {
     deque *res = init_deque(val);
     res->right = (*Deque);
     if ((*Deque) != NULL) {
@@ -22,7 +22,7 @@ void push_left(deque **Deque, int val) {
     *Deque = res;
 }
 
-void push_right(deque **Deque, int val) {
+void push_front(deque **Deque, int val) {
     deque *res = init_deque(val);
     deque *tmp = (*Deque);
     if (tmp != NULL) {
@@ -36,7 +36,7 @@ void push_right(deque **Deque, int val) {
     }
 }
 
-int pop_left(deque **Deque) {
+int pop_back(deque **Deque) {
     if (*Deque != NULL) {
         int res = (*Deque)->val;
         deque *tmp = (*Deque);
@@ -53,7 +53,7 @@ int pop_left(deque **Deque) {
     }
 }
 
-int pop_right(deque **Deque) {
+int pop_front(deque **Deque) {
     if (*Deque != NULL) {
         if ((*Deque)->right != NULL) {
             deque *tmp = (*Deque);
@@ -125,4 +125,23 @@ void show_deque(deque *Deque) {
         printf("%d ", tmp->val);
         tmp = tmp->right;
     }
+    printf("\n");
+}
+
+void rules() {
+    printf("1. Создать дек\n");
+    printf("2. Добавить в дек вверх\n");
+    printf("3. Добавить в дек вниз\n");
+    printf("4. Получить из дека сверху\n");
+    printf("5. Получить из дека снизу\n");
+    printf("6. Показать дек\n");
+    printf("7. Вывести дек сортировки двух деков\n");
+    printf("8. Завершить программу\n");
+    printf("\nВведите нужный пункт\n");
+}
+
+void error() {
+    printf("Что-то пошло не так\n");
+    printf("Попробуй ещё раз\n");
+    printf("Это не жизнь, тут прощаются ошибки\n");
 }

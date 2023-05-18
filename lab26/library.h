@@ -6,18 +6,29 @@
 
 struct deque {
     int val;
-    struct deque* left;
-    struct deque* right;
+    struct deque *left;
+    struct deque *right;
 } typedef deque;
 
 
-deque* init_deque(int val);
-void push_left(deque **Deque, int val);
-void push_right(deque **Deque, int val);
-int pop_left(deque **Deque);
-int pop_right(deque **Deque);
+deque *init_deque(int val);
+
+void push_back(deque **Deque, int val);
+
+void push_front(deque **Deque, int val);
+
+int pop_back(deque **Deque);
+
+int pop_front(deque **Deque);
+
 void destroy_deque(deque **Deque);
-deque* merge_deque(deque *Deque1, deque *Deque2);
+
+deque *merge_deque(deque *Deque1, deque *Deque2);
+
 void show_deque(deque *Deque);
+
+void rules();
+
+void error();
 
 #endif //LAB26_LIBRARY_H
