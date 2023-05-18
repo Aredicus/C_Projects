@@ -13,6 +13,9 @@ int main() {
                 case 1:
                     printf("Введите вершину дерева: ");
                     if (scanf("%d", &value1) == 1) {
+                        if (Node != NULL) {
+                            delTree(&Node);
+                        }
                         Node = initTree(value1);
                     } else {
                         error();
@@ -61,6 +64,14 @@ int main() {
                         error();
                     }
                     break;
+                case 5:
+                    if (Node != NULL) {
+                        deep(Node);
+                    } else {
+                        printf("Нет дерева\n");
+                        error();
+                    }
+                    break;
                 case 6:
                     if (Node != NULL) {
                         delTree(&Node);
@@ -70,6 +81,9 @@ int main() {
                     }
                     break;
                 case 7:
+                    if (Node != NULL) {
+                        delTree(&Node);
+                    }
                     exit(0);
                 default:
                     error();

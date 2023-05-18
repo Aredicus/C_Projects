@@ -210,6 +210,38 @@ void delTree(node **tree) {
     }
 }
 
+pair search(node *tree, int lvl) {
+    pair res;
+    res.i = lvl;
+    res.value = tree->value;
+    if (tree->children != NULL) {
+        node *tmp = tree->children;
+        if (tmp->children != NULL) {
+            res = search(tmp, lvl + 1);
+        }
+    } else {
+        res.i = 0;
+    }
+    pair tmp;
+    tmp.i = lvl;
+    tmp.value = tree->value;
+    if (tree->brothers != NULL) {
+        tmp = search(tree->brothers, lvl);
+    } else {
+        tmp.i = 0;
+    }
+    return tmp.i > res.i ? tmp : res;
+}
+
+void deep(node *tree) {
+    if (tree->children == NULL) {
+        printf("Таких вершин нет");
+    } else {
+        pair tmp = search(tree, 0);
+        printf("deep: %d value: %d", tmp.i, tmp.value);
+    }
+}
+
 void rules() { // Правила
     printf("\n1. Создать дерево\n");
     printf("2. Добавить вершину\n");
