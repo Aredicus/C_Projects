@@ -1,0 +1,3 @@
+/Users/aredicus/Desktop/C_Projects/lab26/cmake-build-debug/CMakeFiles/lab26.dir
+/Users/aredicus/Desktop/C_Projects/lab26/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/aredicus/Desktop/C_Projects/lab26/cmake-build-debug/CMakeFiles/rebuild_cache.dir
