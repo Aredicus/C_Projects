@@ -152,7 +152,7 @@ int main() {
                         destroy_deque(&second);
                     }
                     printf("Прощай\n");
-                    exit(0);git
+                    exit(0);
             }
         } else {
             error();

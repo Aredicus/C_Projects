@@ -10,42 +10,41 @@ deque *init_deque(int val) {
     res->left = NULL;
     res->right = NULL;
     res->val = val;
+    res->topLeft = res;
+    res->topRight = res;
     return res;
 }
 
 void push_back(deque **Deque, int val) {
-    deque *res = init_deque(val);
-    res->right = (*Deque);
-    if ((*Deque) != NULL) {
-        (*Deque)->left = res;
+    if (*Deque != NULL) {
+        deque *res = init_deque(val);
+        (*Deque)->topRight->right = res;
+        res->left = (*Deque)->topRight;
+        (*Deque)->topRight = res;
     }
-    *Deque = res;
 }
 
 void push_front(deque **Deque, int val) {
-    deque *res = init_deque(val);
-    deque *tmp = (*Deque);
-    if (tmp != NULL) {
-        while (tmp->right != NULL) {
-            tmp = tmp->right;
-        }
-        tmp->right = res;
-        res->left = tmp;
-    } else {
-        (*Deque) = res;
+    if (*Deque != NULL) {
+        deque *res = init_deque(val);
+        (*Deque)->topLeft->left = res;
+        res->right = *Deque;
+        (*Deque)->topLeft = res;
     }
 }
 
 int pop_back(deque **Deque) {
     if (*Deque != NULL) {
-        int res = (*Deque)->val;
-        deque *tmp = (*Deque);
-        (*Deque) = (*Deque)->right;
-        if ((*Deque) != NULL) {
-            (*Deque)->left = NULL;
+        int res = (*Deque)->topRight->val;
+        deque *tmp = (*Deque)->topRight;
+        if (tmp == (*Deque)->topLeft) {
+            free(*Deque);
+            *Deque = NULL;
+        } else {
+            (*Deque)->topRight = tmp->left;
+            (*Deque)->topRight->right = NULL;
+            free(tmp);
         }
-        free(tmp);
-        tmp = NULL;
         return res;
     } else {
         printf("\nEmpty Deque\nReturn 0\n");
@@ -55,21 +54,17 @@ int pop_back(deque **Deque) {
 
 int pop_front(deque **Deque) {
     if (*Deque != NULL) {
-        if ((*Deque)->right != NULL) {
-            deque *tmp = (*Deque);
-            while (tmp->right->right != NULL) {
-                tmp = tmp->right;
-            }
-            int res = tmp->right->val;
-            free(tmp->right);
-            tmp->right = NULL;
-            return res;
+        int res = (*Deque)->topLeft->val;
+        deque *tmp = (*Deque)->topLeft;
+        if (tmp == (*Deque)->topRight) {
+            free(*Deque);
+            *Deque = NULL;
         } else {
-            int res = (*Deque)->val;
-            free((*Deque));
-            (*Deque) = NULL;
-            return res;
+            (*Deque)->topLeft = tmp->right;
+            (*Deque)->topLeft->left = NULL;
+            free(tmp);
         }
+        return res;
     } else {
         printf("\nEmpty Deque\nReturn 0\n");
         return 0;
