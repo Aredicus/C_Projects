@@ -12,6 +12,7 @@ deque *init_deque(int val) {
     res->val = val;
     res->topLeft = res;
     res->topRight = res;
+    res->size = 1;
     return res;
 }
 
@@ -19,8 +20,10 @@ void push_back(deque **Deque, int val) {
     if (*Deque != NULL) {
         deque *res = init_deque(val);
         (*Deque)->topRight->right = res;
+        res->topLeft = (*Deque)->topLeft;
         res->left = (*Deque)->topRight;
         (*Deque)->topRight = res;
+        (*Deque)->size++;
     }
 }
 
@@ -28,8 +31,10 @@ void push_front(deque **Deque, int val) {
     if (*Deque != NULL) {
         deque *res = init_deque(val);
         (*Deque)->topLeft->left = res;
-        res->right = *Deque;
+        res->topRight = (*Deque)->topRight;
+        res->right = (*Deque)->topLeft;
         (*Deque)->topLeft = res;
+        (*Deque)->size++;
     }
 }
 
@@ -44,6 +49,7 @@ int pop_back(deque **Deque) {
             (*Deque)->topRight = tmp->left;
             (*Deque)->topRight->right = NULL;
             free(tmp);
+            ((*Deque)->size)--;
         }
         return res;
     } else {
@@ -63,6 +69,7 @@ int pop_front(deque **Deque) {
             (*Deque)->topLeft = tmp->right;
             (*Deque)->topLeft->left = NULL;
             free(tmp);
+            ((*Deque)->size)--;
         }
         return res;
     } else {
@@ -114,7 +121,7 @@ deque *merge_deque(deque *Deque1, deque *Deque2) {
 }
 
 void show_deque(deque *Deque) {
-    deque *tmp = Deque;
+    deque *tmp = Deque->topLeft;
     printf("\n");
     while (tmp != NULL) {
         printf("%d ", tmp->val);
@@ -123,20 +130,65 @@ void show_deque(deque *Deque) {
     printf("\n");
 }
 
+void cpy_Deq(deque **dst, deque *src) {
+    if (src->size != 0) {
+        *dst = init_deque(pop_back(&src));
+        while (src->size != 0) {
+            push_front(dst, pop_back(&src));
+        }
+    }
+}
+
+deque *sort(deque *Deque) { // check
+    if (Deque != NULL && Deque->size != 0) {
+        deque *cpy;
+        cpy_Deq(&cpy, Deque);
+        if (cpy->size == 1 || cpy->size == 2) {
+            if (cpy->size == 1) return cpy;
+            else {
+                deque *tmp1 = init_deque(pop_back(&cpy));
+                deque *tmp2 = init_deque(pop_back(&cpy));
+                deque *res = merge_deque(tmp1, tmp2);
+                destroy_deque(&tmp1);
+                destroy_deque(&tmp2);
+                return res;
+            }
+        } else {
+            int n = cpy->size;
+            int mid = n / 2;
+            deque *tmp1 = init_deque(pop_back(&cpy));
+            for (int i = 1; i < mid; ++i) {
+                push_front(&tmp1, pop_back(&cpy));
+            }
+            deque *tmp2 = init_deque(pop_back(&cpy));
+            for (int i = mid + 1; i < n; ++i) {
+                push_front(&tmp2, pop_back(&cpy));
+            }
+            sort(tmp1);
+            sort(tmp2);
+            deque *res = merge_deque(tmp1, tmp2);
+            destroy_deque(&tmp1);
+            destroy_deque(&tmp2);
+            return res;
+        }
+    }
+    return NULL;
+}
+
 void rules() {
-    printf("1. Создать дек\n");
+    printf("\n1. Создать дек\n");
     printf("2. Добавить в дек вверх\n");
     printf("3. Добавить в дек вниз\n");
     printf("4. Получить из дека сверху\n");
     printf("5. Получить из дека снизу\n");
     printf("6. Показать дек\n");
-    printf("7. Вывести дек сортировки двух деков\n");
+    printf("7. Вывести сортировку дека\n");
     printf("8. Завершить программу\n");
     printf("\nВведите нужный пункт\n");
 }
 
 void error() {
-    printf("Что-то пошло не так\n");
+    printf("\n\nЧто-то пошло не так\n");
     printf("Попробуй ещё раз\n");
-    printf("Это не жизнь, тут прощаются ошибки\n");
+    printf("Это не жизнь, тут прощаются ошибки\n\n");
 }

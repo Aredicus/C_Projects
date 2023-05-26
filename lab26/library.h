@@ -10,6 +10,7 @@ struct deque { //дек
     struct deque *right;
     struct deque *topLeft;
     struct deque *topRight;
+    int size;
 } typedef deque;
 
 
@@ -36,5 +37,9 @@ void rules(); // вывод правил
 void error(); // вывод ошибки
 
 void tmp(deque * Deque);
+
+deque *sort(deque *Deque);
+
+void cpy_Deq(deque **dst, deque *src);
 
 #endif //LAB26_LIBRARY_H
