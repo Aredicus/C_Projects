@@ -8,10 +8,12 @@ CONVOUT = out/conv.out
 GEN = db_generator.c
 GENOUT = out/db.out
 
-all: cmp convert generate
+all: out cmp convert generate
 
 clean:
 	rm -f out/*.out
+out:
+	mkdir ./out
 
 cmp:
 	$(CC) $(CFLAGS) $(GLOBALS_SOURCES) $(MAIN_SOURCES) -o $(FILEOUT)
