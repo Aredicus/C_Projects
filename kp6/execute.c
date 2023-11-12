@@ -31,7 +31,8 @@ void task(hash_table* table, int p) {
             student* tmp = table->cells[i].data; 
             if (tmp->class_num == 10) {
                 counter_ten++;
-            } else if (tmp->class_num == p) {
+            }
+            if (tmp->class_num == p) {
                 counter_p++;
             }
         }
