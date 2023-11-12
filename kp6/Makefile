@@ -11,7 +11,7 @@ GENOUT = out/db.out
 all: out cmp convert generate
 
 clean:
-	rm -f out/*.out
+	rm -rf ./out
 out:
 	mkdir ./out
 
